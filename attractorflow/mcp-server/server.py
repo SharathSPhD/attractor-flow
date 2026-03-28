@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#   "mcp>=1.0.0",
+#   "sentence-transformers>=3.0.0",
+#   "numpy>=1.26.0",
+#   "scipy>=1.12.0",
+#   "scikit-learn>=1.4.0",
+#   "pydantic>=2.6.0",
+# ]
+# ///
 """
 AttractorFlow MCP Server
 

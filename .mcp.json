@@ -2,7 +2,7 @@
   "mcpServers": {
     "attractorflow_mcp": {
       "command": "sh",
-      "args": ["-c", "\"${CLAUDE_PLUGIN_ROOT:-.}/.venv/bin/python\" \"${CLAUDE_PLUGIN_ROOT:-.}/attractorflow/mcp-server/server.py\""],
+      "args": ["-c", "PATH=\"$PATH:$HOME/.local/bin\" uv run \"${CLAUDE_PLUGIN_ROOT:-.}/attractorflow/mcp-server/server.py\""],
       "description": "AttractorFlow — Dynamical systems diagnostics for Claude Code agents. Provides Lyapunov exponent monitoring, regime classification (CONVERGING/CYCLING/EXPLORING/DIVERGING/STUCK/OSCILLATING/PLATEAU), and bifurcation detection for attractor-engineered orchestration."
     }
   }
