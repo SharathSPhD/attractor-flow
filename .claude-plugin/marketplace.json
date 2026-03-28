@@ -1,19 +1,27 @@
 {
+  "name": "attractor-flow",
+  "owner": {
+    "name": "SharathSPhD",
+    "url": "https://github.com/SharathSPhD"
+  },
   "plugins": [
     {
       "id": "attractor-flow",
       "name": "AttractorFlow",
       "version": "1.0.0",
-      "author": "SharathSPhD",
+      "author": {
+        "name": "SharathSPhD",
+        "url": "https://github.com/SharathSPhD"
+      },
       "license": "MIT",
       "description": "Monitor and steer multi-agent Claude Code trajectories using dynamical systems theory. Computes finite-time Lyapunov exponents (FTLE) over semantic embedding sequences to classify agent trajectory regimes (CONVERGING / CYCLING / EXPLORING / DIVERGING / STUCK / OSCILLATING / PLATEAU) and prescribe interventions before tasks derail.",
+      "source": "https://github.com/SharathSPhD/attractor-flow",
       "repository": "https://github.com/SharathSPhD/attractor-flow",
       "homepage": "https://github.com/SharathSPhD/attractor-flow",
       "keywords": ["agents", "orchestration", "lyapunov", "dynamical-systems", "mcp", "attractor", "trajectory", "stability"],
       "categories": ["Agent Orchestration", "MCP Servers", "Task Management", "Monitoring"],
       "rating": 5.0,
       "downloads": 0,
-      "installUrl": "https://github.com/SharathSPhD/attractor-flow",
       "setup": {
         "instructions": "python3.12 -m venv .venv && .venv/bin/pip install -r attractorflow/mcp-server/requirements.txt",
         "notes": "Restart Claude Code after first-time setup. The sentence-transformers model (~22 MB) downloads automatically on first run.",
