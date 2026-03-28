@@ -590,8 +590,9 @@ async def attractorflow_inject_perturbation(
         }
     """
     distances = _monitor.get_distance_series()
+    embeddings = _monitor.get_embeddings_matrix()
     stats = _monitor.get_stats()
-    lya = _lyapunov.compute(distances)
+    lya = _lyapunov.compute(distances, embeddings_matrix=embeddings)
     classification = _classifier.classify(lya, stats)
     regime = classification.regime
 

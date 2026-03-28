@@ -366,3 +366,99 @@ class TestPersistence:
         restored = monitor.load()  # should not raise
         assert not restored
         assert monitor.buffer_size == 0
+
+
+# ------------------------------------------------------------------
+# TestInjectPerturbation — Issues 2: missing embeddings_matrix arg
+# ------------------------------------------------------------------
+
+class TestInjectPerturbation:
+    """
+    Verify that the inject_perturbation tool correctly uses the SVD FTLE path.
+    Tests use synthetic StateRecord objects injected directly into the monitor
+    buffer to avoid loading the SentenceTransformer model.
+    """
+
+    def _make_monitor(self, n=12, seed=42):
+        """Return a PhaseSpaceMonitor with n synthetic embeddings already in buffer."""
+        from phase_space import PhaseSpaceMonitor, StateRecord
+        monitor = PhaseSpaceMonitor()
+        rng = np.random.default_rng(seed)
+        for i in range(n):
+            monitor._buffer.append(StateRecord(
+                text=f"step {i}",
+                embedding=rng.standard_normal(384),
+                step_index=i,
+            ))
+        return monitor
+
+    def test_with_embeddings_produces_singular_values(self):
+        """SVD path: compute() with embeddings_matrix returns non-empty singular_values."""
+        from lyapunov import LyapunovEstimator
+        monitor = self._make_monitor()
+        distances = monitor.get_distance_series()
+        embeddings = monitor.get_embeddings_matrix()
+        lya = LyapunovEstimator(window=8).compute(distances, embeddings_matrix=embeddings)
+        assert lya.singular_values != [], "SVD path must produce non-empty singular_values"
+        assert lya.isotropy_ratio >= 0.0
+
+    def test_without_embeddings_has_empty_singular_values(self):
+        """Fallback path: compute() without embeddings_matrix returns empty singular_values."""
+        from lyapunov import LyapunovEstimator
+        monitor = self._make_monitor()
+        distances = monitor.get_distance_series()
+        lya = LyapunovEstimator(window=8).compute(distances)  # no embeddings_matrix
+        assert lya.singular_values == [], "Fallback must have empty singular_values"
+
+    def test_plateau_strategy_differs_from_stuck_radical(self):
+        """PLATEAU perturbation must use a different strategy than STUCK at high magnitude."""
+        from server import _generate_perturbation
+        from classifier import Regime
+        plateau_result = _generate_perturbation(Regime.PLATEAU, magnitude=0.2)
+        stuck_radical  = _generate_perturbation(Regime.STUCK,   magnitude=0.9)
+        assert plateau_result["strategy"] != stuck_radical["strategy"], (
+            f"PLATEAU strategy '{plateau_result['strategy']}' must differ from "
+            f"STUCK radical '{stuck_radical['strategy']}'"
+        )
+        assert len(plateau_result["text"]) > 20
+
+
+# ------------------------------------------------------------------
+# TestPlateauClassifier — Issue 3: PLATEAU vs STUCK distinction
+# ------------------------------------------------------------------
+
+class TestPlateauClassifier:
+    """
+    Verify that the PLATEAU regime is correctly distinguished from STUCK.
+    PLATEAU: is_stuck=True AND distance_trend < -0.01 (agent drifting toward goal)
+    STUCK:   is_stuck=True AND distance_trend >= -0.01 (agent genuinely stalled)
+    """
+
+    def _make_lya(self):
+        from lyapunov import LyapunovResult
+        return LyapunovResult(
+            ftle=-0.02, step_growth_rate=-0.02, isotropy_ratio=0.8,
+            singular_values=[0.3, 0.1, 0.05], ftle_trend=0.0, window_size=8,
+            n_valid_steps=8, is_stuck=True, autocorrelation=[0.05, 0.02],
+            dominant_lag=1, dominant_autocorr=0.05, stability_label="STUCK",
+            raw_increments=[-0.01] * 8, message="test",
+        )
+
+    def _make_stats(self, distance_trend: float):
+        from phase_space import TrajectoryStats
+        return TrajectoryStats(
+            n_steps=12, distances=[0.3] * 12, mean_distance=0.3,
+            std_distance=0.01, min_distance=0.29, max_distance=0.31,
+            distance_trend=distance_trend, goal_distances=[], pca_2d=[],
+        )
+
+    def test_plateau_vs_stuck_classification(self):
+        """Negative distance_trend + is_stuck → PLATEAU; flat trend + is_stuck → STUCK."""
+        from classifier import AttractorClassifier, Regime
+        clf = AttractorClassifier()
+        plateau = clf.classify(self._make_lya(), self._make_stats(-0.05))
+        stuck   = clf.classify(self._make_lya(), self._make_stats(0.0))
+        assert plateau.regime == Regime.PLATEAU, \
+            f"Expected PLATEAU (is_stuck + negative trend), got {plateau.regime}"
+        assert stuck.regime == Regime.STUCK, \
+            f"Expected STUCK (is_stuck + flat trend), got {stuck.regime}"
