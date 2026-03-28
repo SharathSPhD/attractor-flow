@@ -2,7 +2,10 @@
   "name": "attractor-flow",
   "version": "1.0.0",
   "description": "Monitor and steer multi-agent Claude Code trajectories using dynamical systems theory. Computes finite-time Lyapunov exponents (FTLE) over semantic embedding sequences to classify regime (CONVERGING / CYCLING / EXPLORING / DIVERGING / STUCK / OSCILLATING / PLATEAU) and prescribe interventions before a task derails.",
-  "author": "SharathSPhD",
+  "author": {
+    "name": "SharathSPhD",
+    "email": "qbz506@york.ac.uk"
+  },
   "license": "MIT",
   "repository": "https://github.com/SharathSPhD/attractor-flow",
   "keywords": ["agents", "orchestration", "lyapunov", "dynamical-systems", "mcp", "attractor"],
