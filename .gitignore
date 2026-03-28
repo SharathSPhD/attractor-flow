@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+*.whl
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# pymises — demo project, not part of the plugin
+pymises/
+
+# Demo outputs and artefacts
+demo/results.json
+demo/dashboard_*.html
+demo/__pycache__/
+
+# Simulation scratch outputs
+simulation/__pycache__/
+
+# Model cache (sentence-transformers downloads ~22 MB on first run)
+attractorflow/mcp-server/__pycache__/
+.cache/
+*.pkl
+*.npy
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Secrets / local config
+.env
+.env.local
+*.local
+
+# Claude Code local settings (permissions are machine-specific)
+.claude/settings.local.json

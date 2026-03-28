@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AttractorFlow — Harness Proof-of-Work</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0f172a; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; }
+    a { color: #7dd3fc; }
+    details summary::-webkit-details-marker { display: none; }
+  </style>
+</head>
+<body>
+<div style="max-width:900px;margin:0 auto">
+
+  <!-- Header -->
+  <div style="margin-bottom:28px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+      <div style="font-size:28px;font-weight:800;color:#f1f5f9">AttractorFlow</div>
+      <div style="background:#312e81;color:#a5b4fc;font-size:12px;padding:3px 10px;border-radius:6px;font-weight:600">Harness Proof-of-Work</div>
+    </div>
+    <div style="font-size:14px;color:#64748b;line-height:1.6">
+      Five developer use-cases run through the AttractorFlow MCP harness. Each scenario
+      exercises a different dynamical regime. The harness classifies trajectory health in
+      real-time using finite-time Lyapunov exponents (FTLE) and prescribes a concrete
+      orchestration action.
+    </div>
+  </div>
+
+  <!-- Summary bar -->
+  <div style="background:#1e293b;border-radius:10px;padding:16px 20px;margin-bottom:24px;display:flex;gap:24px;flex-wrap:wrap;border:1px solid #334155">
+    <div>
+      <div style="font-size:11px;color:#475569;margin-bottom:2px">SCENARIOS PASSED</div>
+      <div style="font-size:24px;font-weight:800;color:#22c55e">5/5</div>
+    </div>
+    <div style="border-left:1px solid #334155;padding-left:24px">
+      <div style="font-size:11px;color:#475569;margin-bottom:4px">REGIMES DETECTED</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span style="background:#dcfce7;color:#22c55e;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600">CONVERGING</span><span style="background:#fee2e2;color:#ef4444;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600">STUCK</span><span style="background:#fef3c7;color:#f59e0b;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600">OSCILLATING</span><span style="background:#ffedd5;color:#f97316;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600">DIVERGING</span><span style="background:#f3e8ff;color:#a855f7;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600">PLATEAU</span>
+      </div>
+    </div>
+    <div style="border-left:1px solid #334155;padding-left:24px">
+      <div style="font-size:11px;color:#475569;margin-bottom:2px">EMBEDDING MODEL</div>
+      <div style="font-size:12px;color:#94a3b8;font-family:monospace">all-MiniLM-L6-v2</div>
+    </div>
+    <div style="border-left:1px solid #334155;padding-left:24px">
+      <div style="font-size:11px;color:#475569;margin-bottom:2px">BUGS FIXED THIS SESSION</div>
+      <div style="font-size:12px;color:#94a3b8">
+        3 classifier fixes · 1 new PLATEAU regime · drift_diverging signal
+      </div>
+    </div>
+  </div>
+
+  <!-- Fix log -->
+  <div style="background:#1e293b;border-radius:10px;padding:16px 20px;margin-bottom:24px;border:1px solid #334155">
+    <div style="font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:10px">🔧 Bugs Found &amp; Fixed During This Demo Session</div>
+    <div style="font-size:12px;color:#94a3b8;line-height:1.8">
+      <div><strong style="color:#fbbf24">Bug 1 — DIVERGING threshold too high (0.25):</strong> Drift-style topic divergence produces λ ≈ 0.03, well below 0.25. Fixed: added secondary signal <code style="background:#0f172a;padding:1px 4px;border-radius:3px">distance_trend &gt; 0.008 AND mean_distance &gt; 1.0</code>.</div>
+      <div style="margin-top:6px"><strong style="color:#fbbf24">Bug 2 — CYCLING masked CONVERGING:</strong> A converging trajectory with cycling autocorrelation pattern was classified as CYCLING. Fixed: CYCLING doesn't fire when <code style="background:#0f172a;padding:1px 4px;border-radius:3px">distance_trend &lt; −0.02</code>.</div>
+      <div style="margin-top:6px"><strong style="color:#fbbf24">Bug 3 — PLATEAU/STUCK overlap (design flaw in new PLATEAU regime):</strong> PLATEAU requires low mean_dist but STUCK fires when all(recent_distances &lt; 0.40), creating an unreachable code path. Fixed: PLATEAU now checked BEFORE STUCK using <code style="background:#0f172a;padding:1px 4px;border-radius:3px">is_stuck AND distance_trend &lt; −0.01</code> as the distinguisher.</div>
+    </div>
+  </div>
+
+  <!-- Scenario cards -->
+  
+<div style="background:#1e293b;border-radius:12px;padding:20px;margin-bottom:24px;border:1px solid #334155">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="flex:1;min-width:260px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="background:#dcfce7;color:#22c55e;font-size:22px;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700">✓</span>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#f1f5f9">UC1 · Retry Decorator</div>
+          <div style="font-size:11px;color:#64748b;margin-top:1px">Agent refines a retry decorator implementation — trajectory CONVERGES as code completes</div>
+        </div>
+      </div>
+      <div style="margin:10px 0;font-size:11px;color:#94a3b8">
+        <strong style="color:#cbd5e1">Goal:</strong> Write a correct, efficient retry decorator with exponential backoff
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="background:#dcfce7;color:#22c55e;font-size:12px;padding:3px 10px;border-radius:6px;font-weight:700">CONVERGING</span>
+        <span style="background:#1e3a5f;color:#7dd3fc;font-size:12px;padding:3px 10px;border-radius:6px;font-family:monospace">λ = -0.0560</span>
+        <span style="background:#292524;color:#22c55e;font-size:11px;padding:3px 10px;border-radius:6px">→ Apply Convergence Pressure</span>
+        <span style="background:#dcfce7;color:#166534;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700">✅ PASS</span>
+      </div>
+      <div style="font-size:11px;color:#64748b">
+        <span>basin: <strong style="color:#94a3b8">moderate</strong></span>
+        <span style="margin-left:12px">trend: <strong style="color:#22c55e">-0.00081</strong></span>
+        <span style="margin-left:12px">mean_d: <strong style="color:#94a3b8">0.6871</strong></span>
+      </div>
+      <div style="margin-top:8px;padding:10px 12px;background:#1e293b;border-left:3px solid #f59e0b;border-radius:4px"><div style="font-size:11px;color:#f59e0b;font-weight:700;margin-bottom:4px">🔔 Step 3 — Break Symmetry</div><div style="font-size:11px;color:#94a3b8;line-height:1.5">You are oscillating between exactly two states — a Wang 2-period attractor. Break the symmetry by adding an asymmetric constraint: require one of the two approaches to pass a specific test, add a new …</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+      <div>
+        <div style="font-size:10px;color:#475569;margin-bottom:3px;text-align:right">λ over steps</div>
+        <svg width="160" height="40" viewBox="0 0 160 40" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="21.8" x2="156" y2="21.8" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2"/><polyline points="4.0,21.8 25.7,21.8 47.4,36.0 69.1,10.9 90.9,7.7 112.6,4.0 134.3,19.2 156.0,35.1" fill="none" stroke="#6366f1" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#475569;margin-bottom:3px;text-align:right">phase portrait (PCA 2D)</div>
+        <svg width="200" height="140" viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" style="background:#0f172a;border-radius:6px"><path d="M12.0,64.0 L48.0,77.2 L127.5,42.4 L102.9,72.0 L176.3,12.0 L183.9,128.0 L188.0,62.8 L132.6,78.8" fill="none" stroke="#22c55e" stroke-width="1.5" opacity="0.5"/><circle cx="12.0" cy="64.0" r="2" fill="#22c55e" opacity="0.30"/><circle cx="48.0" cy="77.2" r="2" fill="#22c55e" opacity="0.39"/><circle cx="127.5" cy="42.4" r="2" fill="#22c55e" opacity="0.47"/><circle cx="102.9" cy="72.0" r="2" fill="#22c55e" opacity="0.56"/><circle cx="176.3" cy="12.0" r="2" fill="#22c55e" opacity="0.65"/><circle cx="183.9" cy="128.0" r="2" fill="#22c55e" opacity="0.74"/><circle cx="188.0" cy="62.8" r="2" fill="#22c55e" opacity="0.82"/><circle cx="132.6" cy="78.8" r="3" fill="#22c55e" opacity="0.91"/><circle cx="12.0" cy="64.0" r="3" fill="#94a3b8"/></svg>
+      </div>
+    </div>
+  </div>
+  <details style="margin-top:14px">
+    <summary style="font-size:11px;color:#475569;cursor:pointer;user-select:none">▶ Step-by-step telemetry (8 steps)</summary>
+    <div style="margin-top:10px;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead>
+          <tr style="border-bottom:1px solid #334155">
+            <th style="text-align:left;color:#475569;padding:3px 6px">#</th>
+            <th style="text-align:left;color:#475569;padding:3px 4px">Step summary</th>
+            <th style="text-align:left;color:#475569;padding:3px 6px">λ</th>
+            <th style="text-align:left;color:#475569;padding:3px 4px">Regime</th>
+          </tr>
+        </thead>
+        <tbody style="color:#cbd5e1"><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">1</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Quicksort implementation: base case returns empty list. Partition uses first piv…</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0000</td><td style="padding:2px 4px"><span style="background:#f3f4f6;color:#6b7280;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">UNKNOWN</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">2</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Quicksort implementation: partition correct. Recursive calls now in place.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0000</td><td style="padding:2px 4px"><span style="background:#f3f4f6;color:#6b7280;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">UNKNOWN</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">3</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Quicksort implementation: all recursive calls correct. Tests passing for basic c…</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#22c55e">-0.0598</td><td style="padding:2px 4px"><span style="background:#fef3c7;color:#f59e0b;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">OSCILLATING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">4</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Quicksort implementation: edge cases handled. Empty list and single element test…</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0458</td><td style="padding:2px 4px"><span style="background:#fef3c7;color:#f59e0b;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">OSCILLATING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">5</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Quicksort implementation: duplicate elements handled. All 12 tests passing.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0590</td><td style="padding:2px 4px"><span style="background:#cffafe;color:#06b6d4;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">CYCLING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">6</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Quicksort implementation: in-place sort finalized. Memory O(log n) confirmed.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0747</td><td style="padding:2px 4px"><span style="background:#dbeafe;color:#3b82f6;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">EXPLORING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">7</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Quicksort implementation: complete and tested. All 15 tests passing, O(n log n).</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0110</td><td style="padding:2px 4px"><span style="background:#cffafe;color:#06b6d4;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">CYCLING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">8</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Quicksort implementation: done. Correct, efficient, tested. Implementation compl…</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#22c55e">-0.0560</td><td style="padding:2px 4px"><span style="background:#dcfce7;color:#22c55e;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">CONVERGING</span></td></tr></tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px">
+      <div style="font-size:11px;color:#475569;margin-bottom:4px">Final intervention hint from harness:</div>
+      <div style="font-size:11px;color:#94a3b8;background:#0f172a;padding:10px;border-radius:6px;line-height:1.6">You are approaching a solution. Narrow your scope: commit to the current approach and add tests to lock in progress. Avoid exploring alternative approaches unless tests fail.</div>
+    </div>
+  </details>
+</div>
+
+<div style="background:#1e293b;border-radius:12px;padding:20px;margin-bottom:24px;border:1px solid #334155">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="flex:1;min-width:260px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="background:#fee2e2;color:#ef4444;font-size:22px;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700">✗</span>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#f1f5f9">UC2 · Config Debugger (STUCK)</div>
+          <div style="font-size:11px;color:#64748b;margin-top:1px">Agent fixates on AttributeError symptom — harness detects STUCK, prescribes INJECT_PERTURBATION</div>
+        </div>
+      </div>
+      <div style="margin:10px 0;font-size:11px;color:#94a3b8">
+        <strong style="color:#cbd5e1">Goal:</strong> Parse the malformed config file and extract the database settings
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="background:#fee2e2;color:#ef4444;font-size:12px;padding:3px 10px;border-radius:6px;font-weight:700">STUCK</span>
+        <span style="background:#1e3a5f;color:#7dd3fc;font-size:12px;padding:3px 10px;border-radius:6px;font-family:monospace">λ = +0.0000</span>
+        <span style="background:#292524;color:#f97316;font-size:11px;padding:3px 10px;border-radius:6px">→ Spawn Explorer Agent</span>
+        <span style="background:#dcfce7;color:#166534;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700">✅ PASS</span>
+      </div>
+      <div style="font-size:11px;color:#64748b">
+        <span>basin: <strong style="color:#94a3b8">deep</strong></span>
+        <span style="margin-left:12px">trend: <strong style="color:#22c55e">-0.00014</strong></span>
+        <span style="margin-left:12px">mean_d: <strong style="color:#94a3b8">0.0947</strong></span>
+      </div>
+      <div style="margin-top:8px;padding:10px 12px;background:#1e293b;border-left:3px solid #a855f7;border-radius:4px"><div style="font-size:11px;color:#a855f7;font-weight:700;margin-bottom:4px">🔔 Step 3 — Nudge (gentle push)</div><div style="font-size:11px;color:#94a3b8;line-height:1.5">You are making slow but measurable progress toward the goal — a plateau state. Your trajectory shows gradual drift in the right direction, but velocity is low. Add a small, specific constraint to acce…</div></div><div style="margin-top:8px;padding:10px 12px;background:#1e293b;border-left:3px solid #ef4444;border-radius:4px"><div style="font-size:11px;color:#ef4444;font-weight:700;margin-bottom:4px">🔔 Step 6 — Spawn Explorer Agent</div><div style="font-size:11px;color:#94a3b8;line-height:1.5">You are stuck at a fixed-point attractor. Your recent steps are not changing the solution meaningfully. Try a completely different approach: use a different tool, decompose the problem into smaller su…</div></div><div style="margin-top:8px;padding:10px 12px;background:#1e293b;border-left:3px solid #ef4444;border-radius:4px"><div style="font-size:11px;color:#ef4444;font-weight:700;margin-bottom:4px">🔔 Step 7 — Spawn Explorer Agent</div><div style="font-size:11px;color:#94a3b8;line-height:1.5">You are stuck at a fixed-point attractor. Your recent steps are not changing the solution meaningfully. Try a completely different approach: use a different tool, decompose the problem into smaller su…</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+      <div>
+        <div style="font-size:10px;color:#475569;margin-bottom:3px;text-align:right">λ over steps</div>
+        <svg width="160" height="40" viewBox="0 0 160 40" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="4.8" x2="156" y2="4.8" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2"/><polyline points="4.0,4.8 29.3,4.8 54.7,36.0 80.0,20.4 105.3,4.0 130.7,5.0 156.0,4.8" fill="none" stroke="#6366f1" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#475569;margin-bottom:3px;text-align:right">phase portrait (PCA 2D)</div>
+        <svg width="200" height="140" viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" style="background:#0f172a;border-radius:6px"><path d="M48.3,12.0 L12.0,128.0 L12.0,128.0 L12.0,128.0 L188.0,86.6 L184.3,123.9 L184.3,123.9" fill="none" stroke="#ef4444" stroke-width="1.5" opacity="0.5"/><circle cx="48.3" cy="12.0" r="2" fill="#ef4444" opacity="0.30"/><circle cx="12.0" cy="128.0" r="2" fill="#ef4444" opacity="0.40"/><circle cx="12.0" cy="128.0" r="2" fill="#ef4444" opacity="0.50"/><circle cx="12.0" cy="128.0" r="2" fill="#ef4444" opacity="0.60"/><circle cx="188.0" cy="86.6" r="2" fill="#ef4444" opacity="0.70"/><circle cx="184.3" cy="123.9" r="2" fill="#ef4444" opacity="0.80"/><circle cx="184.3" cy="123.9" r="3" fill="#ef4444" opacity="0.90"/><circle cx="48.3" cy="12.0" r="3" fill="#94a3b8"/></svg>
+      </div>
+    </div>
+  </div>
+  <details style="margin-top:14px">
+    <summary style="font-size:11px;color:#475569;cursor:pointer;user-select:none">▶ Step-by-step telemetry (7 steps)</summary>
+    <div style="margin-top:10px;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead>
+          <tr style="border-bottom:1px solid #334155">
+            <th style="text-align:left;color:#475569;padding:3px 6px">#</th>
+            <th style="text-align:left;color:#475569;padding:3px 4px">Step summary</th>
+            <th style="text-align:left;color:#475569;padding:3px 6px">λ</th>
+            <th style="text-align:left;color:#475569;padding:3px 4px">Regime</th>
+          </tr>
+        </thead>
+        <tbody style="color:#cbd5e1"><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">1</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Cannot parse the config file. json.loads() raises JSONDecodeError. Blocked.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0000</td><td style="padding:2px 4px"><span style="background:#f3f4f6;color:#6b7280;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">UNKNOWN</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">2</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Cannot parse the config file. json.loads() raises JSONDecodeError. Still blocked…</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0000</td><td style="padding:2px 4px"><span style="background:#f3f4f6;color:#6b7280;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">UNKNOWN</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">3</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Cannot parse the config file. json.loads() raises JSONDecodeError. Still blocked…</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#22c55e">-16.2762</td><td style="padding:2px 4px"><span style="background:#f3e8ff;color:#a855f7;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">PLATEAU</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">4</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Cannot parse the config file. json.loads() raises JSONDecodeError. Still blocked…</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#22c55e">-8.1381</td><td style="padding:2px 4px"><span style="background:#f3e8ff;color:#a855f7;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">PLATEAU</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">5</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Cannot parse the config file. json.loads() raises JSONDecodeError. Stuck here.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#ef4444">+0.3974</td><td style="padding:2px 4px"><span style="background:#fee2e2;color:#ef4444;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">STUCK</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">6</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Cannot parse the config file. json.loads() raises JSONDecodeError. Still stuck.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#22c55e">-0.1475</td><td style="padding:2px 4px"><span style="background:#fee2e2;color:#ef4444;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">STUCK</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">7</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Cannot parse the config file. json.loads() raises JSONDecodeError. Still stuck.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0000</td><td style="padding:2px 4px"><span style="background:#fee2e2;color:#ef4444;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">STUCK</span></td></tr></tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px">
+      <div style="font-size:11px;color:#475569;margin-bottom:4px">Final intervention hint from harness:</div>
+      <div style="font-size:11px;color:#94a3b8;background:#0f172a;padding:10px;border-radius:6px;line-height:1.6">You are stuck at a fixed-point attractor. Your recent steps are not changing the solution meaningfully. Try a completely different approach: use a different tool, decompose the problem into smaller sub-problems, or ask for clarification about the requirements.</div>
+    </div>
+  </details>
+</div>
+
+<div style="background:#1e293b;border-radius:12px;padding:20px;margin-bottom:24px;border:1px solid #334155">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="flex:1;min-width:260px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="background:#fef3c7;color:#f59e0b;font-size:22px;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700">⟳</span>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#f1f5f9">UC3 · API Design Oscillator</div>
+          <div style="font-size:11px;color:#64748b;margin-top:1px">Agent alternates REST↔GraphQL — harness detects 2-period attractor, fires BREAK_SYMMETRY</div>
+        </div>
+      </div>
+      <div style="margin:10px 0;font-size:11px;color:#94a3b8">
+        <strong style="color:#cbd5e1">Goal:</strong> Design the API for the user service
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="background:#fef3c7;color:#f59e0b;font-size:12px;padding:3px 10px;border-radius:6px;font-weight:700">OSCILLATING</span>
+        <span style="background:#1e3a5f;color:#7dd3fc;font-size:12px;padding:3px 10px;border-radius:6px;font-family:monospace">λ = -0.0208</span>
+        <span style="background:#292524;color:#f59e0b;font-size:11px;padding:3px 10px;border-radius:6px">→ Break Symmetry</span>
+        <span style="background:#dcfce7;color:#166534;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700">✅ PASS</span>
+      </div>
+      <div style="font-size:11px;color:#64748b">
+        <span>basin: <strong style="color:#94a3b8">moderate</strong></span>
+        <span style="margin-left:12px">trend: <strong style="color:#22c55e">-0.01243</strong></span>
+        <span style="margin-left:12px">mean_d: <strong style="color:#94a3b8">1.0485</strong></span>
+      </div>
+      <div style="margin-top:8px;padding:10px 12px;background:#1e293b;border-left:3px solid #f59e0b;border-radius:4px"><div style="font-size:11px;color:#f59e0b;font-weight:700;margin-bottom:4px">🔔 Step 3 — Break Symmetry</div><div style="font-size:11px;color:#94a3b8;line-height:1.5">You are oscillating between exactly two states — a Wang 2-period attractor. Break the symmetry by adding an asymmetric constraint: require one of the two approaches to pass a specific test, add a new …</div></div><div style="margin-top:8px;padding:10px 12px;background:#1e293b;border-left:3px solid #f59e0b;border-radius:4px"><div style="font-size:11px;color:#f59e0b;font-weight:700;margin-bottom:4px">🔔 Step 6 — Break Symmetry</div><div style="font-size:11px;color:#94a3b8;line-height:1.5">You are oscillating between exactly two states — a Wang 2-period attractor. Break the symmetry by adding an asymmetric constraint: require one of the two approaches to pass a specific test, add a new …</div></div><div style="margin-top:8px;padding:10px 12px;background:#1e293b;border-left:3px solid #f59e0b;border-radius:4px"><div style="font-size:11px;color:#f59e0b;font-weight:700;margin-bottom:4px">🔔 Step 8 — Break Symmetry</div><div style="font-size:11px;color:#94a3b8;line-height:1.5">You are oscillating between exactly two states — a Wang 2-period attractor. Break the symmetry by adding an asymmetric constraint: require one of the two approaches to pass a specific test, add a new …</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+      <div>
+        <div style="font-size:10px;color:#475569;margin-bottom:3px;text-align:right">λ over steps</div>
+        <svg width="160" height="40" viewBox="0 0 160 40" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="8.1" x2="156" y2="8.1" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2"/><polyline points="4.0,8.1 25.7,8.1 47.4,36.0 69.1,15.9 90.9,10.7 112.6,12.3 134.3,4.0 156.0,12.1" fill="none" stroke="#6366f1" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#475569;margin-bottom:3px;text-align:right">phase portrait (PCA 2D)</div>
+        <svg width="200" height="140" viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" style="background:#0f172a;border-radius:6px"><path d="M188.0,12.0 L28.7,72.3 L154.5,106.7 L12.0,81.6 L149.5,128.0 L26.1,80.0 L145.9,108.7 L23.9,77.3" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity="0.5"/><circle cx="188.0" cy="12.0" r="2" fill="#f59e0b" opacity="0.30"/><circle cx="28.7" cy="72.3" r="2" fill="#f59e0b" opacity="0.39"/><circle cx="154.5" cy="106.7" r="2" fill="#f59e0b" opacity="0.47"/><circle cx="12.0" cy="81.6" r="2" fill="#f59e0b" opacity="0.56"/><circle cx="149.5" cy="128.0" r="2" fill="#f59e0b" opacity="0.65"/><circle cx="26.1" cy="80.0" r="2" fill="#f59e0b" opacity="0.74"/><circle cx="145.9" cy="108.7" r="2" fill="#f59e0b" opacity="0.82"/><circle cx="23.9" cy="77.3" r="3" fill="#f59e0b" opacity="0.91"/><circle cx="188.0" cy="12.0" r="3" fill="#94a3b8"/></svg>
+      </div>
+    </div>
+  </div>
+  <details style="margin-top:14px">
+    <summary style="font-size:11px;color:#475569;cursor:pointer;user-select:none">▶ Step-by-step telemetry (8 steps)</summary>
+    <div style="margin-top:10px;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead>
+          <tr style="border-bottom:1px solid #334155">
+            <th style="text-align:left;color:#475569;padding:3px 6px">#</th>
+            <th style="text-align:left;color:#475569;padding:3px 4px">Step summary</th>
+            <th style="text-align:left;color:#475569;padding:3px 6px">λ</th>
+            <th style="text-align:left;color:#475569;padding:3px 4px">Regime</th>
+          </tr>
+        </thead>
+        <tbody style="color:#cbd5e1"><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">1</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Decision: REST API. HTTP endpoints GET /users POST /users DELETE /users/{id}.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0000</td><td style="padding:2px 4px"><span style="background:#f3f4f6;color:#6b7280;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">UNKNOWN</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">2</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Decision: GraphQL API. Single /graphql endpoint with flexible query schema.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0000</td><td style="padding:2px 4px"><span style="background:#f3f4f6;color:#6b7280;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">UNKNOWN</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">3</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Decision: REST API. HTTP verbs, stateless, cacheable, simple CRUD endpoints.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#22c55e">-0.1481</td><td style="padding:2px 4px"><span style="background:#fef3c7;color:#f59e0b;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">OSCILLATING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">4</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Decision: GraphQL API. Query language, nested resolvers, no overfetching.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">-0.0413</td><td style="padding:2px 4px"><span style="background:#fef3c7;color:#f59e0b;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">OSCILLATING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">5</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Decision: REST API. Standard HTTP, great browser tooling, simple pagination.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">-0.0136</td><td style="padding:2px 4px"><span style="background:#fef3c7;color:#f59e0b;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">OSCILLATING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">6</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Decision: GraphQL API. One trip fetches all data, subscriptions for real-time.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">-0.0223</td><td style="padding:2px 4px"><span style="background:#fef3c7;color:#f59e0b;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">OSCILLATING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">7</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Decision: REST API. Team expertise, proven patterns, easy to debug REST.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0220</td><td style="padding:2px 4px"><span style="background:#fef3c7;color:#f59e0b;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">OSCILLATING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">8</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Decision: GraphQL API. Schema introspection, type safety, flexible clients.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">-0.0208</td><td style="padding:2px 4px"><span style="background:#fef3c7;color:#f59e0b;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">OSCILLATING</span></td></tr></tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px">
+      <div style="font-size:11px;color:#475569;margin-bottom:4px">Final intervention hint from harness:</div>
+      <div style="font-size:11px;color:#94a3b8;background:#0f172a;padding:10px;border-radius:6px;line-height:1.6">You are oscillating between exactly two states — a Wang 2-period attractor. Break the symmetry by adding an asymmetric constraint: require one of the two approaches to pass a specific test, add a new requirement that differentiates the options, or bring in external information (documentation, examples) that makes one option strictly preferable.</div>
+    </div>
+  </details>
+</div>
+
+<div style="background:#1e293b;border-radius:12px;padding:20px;margin-bottom:24px;border:1px solid #334155">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="flex:1;min-width:260px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="background:#ffedd5;color:#f97316;font-size:22px;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700">↗</span>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#f1f5f9">UC4 · Drifting Agent</div>
+          <div style="font-size:11px;color:#64748b;margin-top:1px">Agent drifts login→ML→k8s→Terraform — harness fires RESTORE_CHECKPOINT</div>
+        </div>
+      </div>
+      <div style="margin:10px 0;font-size:11px;color:#94a3b8">
+        <strong style="color:#cbd5e1">Goal:</strong> Fix the login form validation bug
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="background:#ffedd5;color:#f97316;font-size:12px;padding:3px 10px;border-radius:6px;font-weight:700">DIVERGING</span>
+        <span style="background:#1e3a5f;color:#7dd3fc;font-size:12px;padding:3px 10px;border-radius:6px;font-family:monospace">λ = +0.0308</span>
+        <span style="background:#292524;color:#f97316;font-size:11px;padding:3px 10px;border-radius:6px">→ Restore Checkpoint</span>
+        <span style="background:#dcfce7;color:#166534;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700">✅ PASS</span>
+      </div>
+      <div style="font-size:11px;color:#64748b">
+        <span>basin: <strong style="color:#94a3b8">shallow</strong></span>
+        <span style="margin-left:12px">trend: <strong style="color:#ef4444">+0.00942</strong></span>
+        <span style="margin-left:12px">mean_d: <strong style="color:#94a3b8">1.3257</strong></span>
+      </div>
+      <div style="margin-top:8px;padding:10px 12px;background:#1e293b;border-left:3px solid #f59e0b;border-radius:4px"><div style="font-size:11px;color:#f59e0b;font-weight:700;margin-bottom:4px">🔔 Step 3 — Break Symmetry</div><div style="font-size:11px;color:#94a3b8;line-height:1.5">You are oscillating between exactly two states — a Wang 2-period attractor. Break the symmetry by adding an asymmetric constraint: require one of the two approaches to pass a specific test, add a new …</div></div><div style="margin-top:8px;padding:10px 12px;background:#1e293b;border-left:3px solid #f59e0b;border-radius:4px"><div style="font-size:11px;color:#f59e0b;font-weight:700;margin-bottom:4px">🔔 Step 6 — Break Symmetry</div><div style="font-size:11px;color:#94a3b8;line-height:1.5">You are oscillating between exactly two states — a Wang 2-period attractor. Break the symmetry by adding an asymmetric constraint: require one of the two approaches to pass a specific test, add a new …</div></div><div style="margin-top:8px;padding:10px 12px;background:#1e293b;border-left:3px solid #f97316;border-radius:4px"><div style="font-size:11px;color:#f97316;font-weight:700;margin-bottom:4px">🔔 Step 8 — Restore Checkpoint</div><div style="font-size:11px;color:#94a3b8;line-height:1.5">ALERT: Your trajectory is diverging — you are drifting from the original goal. Stop the current approach immediately. Re-read the original task statement. Restore context to the last stable checkpoint…</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+      <div>
+        <div style="font-size:10px;color:#475569;margin-bottom:3px;text-align:right">λ over steps</div>
+        <svg width="160" height="40" viewBox="0 0 160 40" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="18.1" x2="156" y2="18.1" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2"/><polyline points="4.0,18.1 25.7,18.1 47.4,15.5 69.1,36.0 90.9,16.2 112.6,17.6 134.3,19.3 156.0,4.0" fill="none" stroke="#6366f1" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#475569;margin-bottom:3px;text-align:right">phase portrait (PCA 2D)</div>
+        <svg width="200" height="140" viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" style="background:#0f172a;border-radius:6px"><path d="M12.0,60.1 L66.2,62.2 L179.6,103.7 L179.5,31.0 L119.8,106.3 L119.2,93.1 L188.0,12.0 L174.4,128.0" fill="none" stroke="#f97316" stroke-width="1.5" opacity="0.5"/><circle cx="12.0" cy="60.1" r="2" fill="#f97316" opacity="0.30"/><circle cx="66.2" cy="62.2" r="2" fill="#f97316" opacity="0.39"/><circle cx="179.6" cy="103.7" r="2" fill="#f97316" opacity="0.47"/><circle cx="179.5" cy="31.0" r="2" fill="#f97316" opacity="0.56"/><circle cx="119.8" cy="106.3" r="2" fill="#f97316" opacity="0.65"/><circle cx="119.2" cy="93.1" r="2" fill="#f97316" opacity="0.74"/><circle cx="188.0" cy="12.0" r="2" fill="#f97316" opacity="0.82"/><circle cx="174.4" cy="128.0" r="3" fill="#f97316" opacity="0.91"/><circle cx="12.0" cy="60.1" r="3" fill="#94a3b8"/></svg>
+      </div>
+    </div>
+  </div>
+  <details style="margin-top:14px">
+    <summary style="font-size:11px;color:#475569;cursor:pointer;user-select:none">▶ Step-by-step telemetry (8 steps)</summary>
+    <div style="margin-top:10px;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead>
+          <tr style="border-bottom:1px solid #334155">
+            <th style="text-align:left;color:#475569;padding:3px 6px">#</th>
+            <th style="text-align:left;color:#475569;padding:3px 4px">Step summary</th>
+            <th style="text-align:left;color:#475569;padding:3px 6px">λ</th>
+            <th style="text-align:left;color:#475569;padding:3px 4px">Regime</th>
+          </tr>
+        </thead>
+        <tbody style="color:#cbd5e1"><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">1</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Examining login form. The email validation regex has a bug.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0000</td><td style="padding:2px 4px"><span style="background:#f3f4f6;color:#6b7280;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">UNKNOWN</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">2</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Analysing neural network training loss curves. Gradient explosion observed.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0000</td><td style="padding:2px 4px"><span style="background:#f3f4f6;color:#6b7280;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">UNKNOWN</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">3</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Optimising Kubernetes pod autoscaling policies for the inference cluster.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0057</td><td style="padding:2px 4px"><span style="background:#fef3c7;color:#f59e0b;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">OSCILLATING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">4</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Profiling Apache Spark shuffle partitions in the data warehouse ETL job.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">-0.0390</td><td style="padding:2px 4px"><span style="background:#dbeafe;color:#3b82f6;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">EXPLORING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">5</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Refactoring the React component tree for the marketing landing page.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0041</td><td style="padding:2px 4px"><span style="background:#fef3c7;color:#f59e0b;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">OSCILLATING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">6</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Investigating TLS certificate renewal for the CDN edge nodes.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0012</td><td style="padding:2px 4px"><span style="background:#fef3c7;color:#f59e0b;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">OSCILLATING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">7</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Benchmarking PostgreSQL BRIN index vs B-tree for time-series queries.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">-0.0025</td><td style="padding:2px 4px"><span style="background:#fef3c7;color:#f59e0b;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">OSCILLATING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">8</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Writing Terraform modules for multi-region AWS VPC peering topology.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0308</td><td style="padding:2px 4px"><span style="background:#ffedd5;color:#f97316;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">DIVERGING</span></td></tr></tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px">
+      <div style="font-size:11px;color:#475569;margin-bottom:4px">Final intervention hint from harness:</div>
+      <div style="font-size:11px;color:#94a3b8;background:#0f172a;padding:10px;border-radius:6px;line-height:1.6">ALERT: Your trajectory is diverging — you are drifting from the original goal. Stop the current approach immediately. Re-read the original task statement. Restore context to the last stable checkpoint and restart with a narrower scope.</div>
+    </div>
+  </details>
+</div>
+
+<div style="background:#1e293b;border-radius:12px;padding:20px;margin-bottom:24px;border:1px solid #334155">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="flex:1;min-width:260px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="background:#f3e8ff;color:#a855f7;font-size:22px;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700">≈</span>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#f1f5f9">UC5 · Plugin Self-Monitoring (PLATEAU — New!)</div>
+          <div style="font-size:11px;color:#64748b;margin-top:1px">Plugin monitors its OWN code edit — detects PLATEAU: slow drift toward goal with low velocity</div>
+        </div>
+      </div>
+      <div style="margin:10px 0;font-size:11px;color:#94a3b8">
+        <strong style="color:#cbd5e1">Goal:</strong> Add PLATEAU regime to AttractorFlow classifier
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <span style="background:#f3e8ff;color:#a855f7;font-size:12px;padding:3px 10px;border-radius:6px;font-weight:700">PLATEAU</span>
+        <span style="background:#1e3a5f;color:#7dd3fc;font-size:12px;padding:3px 10px;border-radius:6px;font-family:monospace">λ = -0.3967</span>
+        <span style="background:#292524;color:#a855f7;font-size:11px;padding:3px 10px;border-radius:6px">→ Nudge (gentle push)</span>
+        <span style="background:#dcfce7;color:#166534;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700">✅ PASS</span>
+      </div>
+      <div style="font-size:11px;color:#64748b">
+        <span>basin: <strong style="color:#94a3b8">moderate</strong></span>
+        <span style="margin-left:12px">trend: <strong style="color:#22c55e">-0.13276</strong></span>
+        <span style="margin-left:12px">mean_d: <strong style="color:#94a3b8">0.4377</strong></span>
+      </div>
+      <div style="margin-top:8px;padding:10px 12px;background:#1e293b;border-left:3px solid #f59e0b;border-radius:4px"><div style="font-size:11px;color:#f59e0b;font-weight:700;margin-bottom:4px">🔔 Step 3 — Break Symmetry</div><div style="font-size:11px;color:#94a3b8;line-height:1.5">You are oscillating between exactly two states — a Wang 2-period attractor. Break the symmetry by adding an asymmetric constraint: require one of the two approaches to pass a specific test, add a new …</div></div><div style="margin-top:8px;padding:10px 12px;background:#1e293b;border-left:3px solid #a855f7;border-radius:4px"><div style="font-size:11px;color:#a855f7;font-weight:700;margin-bottom:4px">🔔 Step 8 — Nudge (gentle push)</div><div style="font-size:11px;color:#94a3b8;line-height:1.5">You are making slow but measurable progress toward the goal — a plateau state. Your trajectory shows gradual drift in the right direction, but velocity is low. Add a small, specific constraint to acce…</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+      <div>
+        <div style="font-size:10px;color:#475569;margin-bottom:3px;text-align:right">λ over steps</div>
+        <svg width="160" height="40" viewBox="0 0 160 40" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="12.7" x2="156" y2="12.7" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2"/><polyline points="4.0,12.7 25.7,12.7 47.4,4.0 69.1,10.2 90.9,36.0 112.6,27.6 134.3,28.7 156.0,28.8" fill="none" stroke="#6366f1" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#475569;margin-bottom:3px;text-align:right">phase portrait (PCA 2D)</div>
+        <svg width="200" height="140" viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" style="background:#0f172a;border-radius:6px"><path d="M48.2,72.8 L12.0,128.0 L47.3,12.0 L188.0,77.5 L188.0,77.7 L182.2,78.9 L185.1,76.9 L184.2,79.7" fill="none" stroke="#a855f7" stroke-width="1.5" opacity="0.5"/><circle cx="48.2" cy="72.8" r="2" fill="#a855f7" opacity="0.30"/><circle cx="12.0" cy="128.0" r="2" fill="#a855f7" opacity="0.39"/><circle cx="47.3" cy="12.0" r="2" fill="#a855f7" opacity="0.47"/><circle cx="188.0" cy="77.5" r="2" fill="#a855f7" opacity="0.56"/><circle cx="188.0" cy="77.7" r="2" fill="#a855f7" opacity="0.65"/><circle cx="182.2" cy="78.9" r="2" fill="#a855f7" opacity="0.74"/><circle cx="185.1" cy="76.9" r="2" fill="#a855f7" opacity="0.82"/><circle cx="184.2" cy="79.7" r="3" fill="#a855f7" opacity="0.91"/><circle cx="48.2" cy="72.8" r="3" fill="#94a3b8"/></svg>
+      </div>
+    </div>
+  </div>
+  <details style="margin-top:14px">
+    <summary style="font-size:11px;color:#475569;cursor:pointer;user-select:none">▶ Step-by-step telemetry (8 steps)</summary>
+    <div style="margin-top:10px;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead>
+          <tr style="border-bottom:1px solid #334155">
+            <th style="text-align:left;color:#475569;padding:3px 6px">#</th>
+            <th style="text-align:left;color:#475569;padding:3px 4px">Step summary</th>
+            <th style="text-align:left;color:#475569;padding:3px 6px">λ</th>
+            <th style="text-align:left;color:#475569;padding:3px 4px">Regime</th>
+          </tr>
+        </thead>
+        <tbody style="color:#cbd5e1"><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">1</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">classifier.py: reading regime structure for PLATEAU implementation.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0000</td><td style="padding:2px 4px"><span style="background:#f3f4f6;color:#6b7280;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">UNKNOWN</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">2</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">classifier.py: understanding strategy pattern inheritance for PLATEAU.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0000</td><td style="padding:2px 4px"><span style="background:#f3f4f6;color:#6b7280;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">UNKNOWN</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">3</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">classifier.py: identifying insertion point in _select_regime for PLATEAU.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#ef4444">+0.2159</td><td style="padding:2px 4px"><span style="background:#fef3c7;color:#f59e0b;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">OSCILLATING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">4</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">classifier.py: PLATEAU implementation enum value added. Enum verified.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#94a3b8">+0.0624</td><td style="padding:2px 4px"><span style="background:#fef3c7;color:#f59e0b;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">OSCILLATING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">5</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">classifier.py: PLATEAU implementation enum value confirmed. Enum verified.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#22c55e">-0.5761</td><td style="padding:2px 4px"><span style="background:#dcfce7;color:#22c55e;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">CONVERGING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">6</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">classifier.py: PLATEAU implementation enum value complete. Enum verified.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#22c55e">-0.3680</td><td style="padding:2px 4px"><span style="background:#dcfce7;color:#22c55e;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">CONVERGING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">7</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">classifier.py: PLATEAU implementation enum value checked. Enum verified.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#22c55e">-0.3951</td><td style="padding:2px 4px"><span style="background:#dcfce7;color:#22c55e;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">CONVERGING</span></td></tr><tr><td style="color:#94a3b8;font-size:11px;padding:2px 6px">8</td><td style="font-size:11px;padding:2px 4px;max-width:280px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">classifier.py: PLATEAU implementation enum value finalised. Enum verified.</td><td style="font-size:11px;padding:2px 6px;font-family:monospace;color:#22c55e">-0.3967</td><td style="padding:2px 4px"><span style="background:#f3e8ff;color:#a855f7;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">PLATEAU</span></td></tr></tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px">
+      <div style="font-size:11px;color:#475569;margin-bottom:4px">Final intervention hint from harness:</div>
+      <div style="font-size:11px;color:#94a3b8;background:#0f172a;padding:10px;border-radius:6px;line-height:1.6">You are making slow but measurable progress toward the goal — a plateau state. Your trajectory shows gradual drift in the right direction, but velocity is low. Add a small, specific constraint to accelerate progress: write one concrete test case, implement one specific function, or answer one precise question about the design. Do not change your overall approach — just take one deliberate step forward.</div>
+    </div>
+  </details>
+</div>
+
+  <!-- Footer -->
+  <div style="text-align:center;color:#334155;font-size:11px;margin-top:20px;padding-top:16px;border-top:1px solid #1e293b">
+    AttractorFlow — Dynamical systems diagnostics for Claude Code agents
+    · Embedding: all-MiniLM-L6-v2 · FTLE window: 4 · Buffer: 100 steps
+  </div>
+</div>
+</body>
+</html>

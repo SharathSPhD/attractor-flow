@@ -1,0 +1,38 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "AttractorFlow MCP Server (SSE / HTTP)",
+      "runtimeExecutable": ".venv/bin/python",
+      "runtimeArgs": [
+        "-c",
+        "import sys; sys.path.insert(0,'attractorflow/mcp-server'); from server import mcp; mcp.run(transport='sse')"
+      ],
+      "port": 8000
+    },
+    {
+      "name": "AttractorFlow MCP Server (stdio)",
+      "runtimeExecutable": ".venv/bin/python",
+      "runtimeArgs": ["attractorflow/mcp-server/server.py"],
+      "port": null
+    },
+    {
+      "name": "AttractorFlow Dashboard",
+      "runtimeExecutable": ".venv/bin/python",
+      "runtimeArgs": ["demo/dashboard_server.py"],
+      "port": 8002
+    },
+    {
+      "name": "Lorenz Demo",
+      "runtimeExecutable": ".venv/bin/python",
+      "runtimeArgs": ["simulation/lorenz_server.py"],
+      "port": 8001
+    },
+    {
+      "name": "Agent Simulator",
+      "runtimeExecutable": ".venv/bin/python",
+      "runtimeArgs": ["simulation/agent_simulator.py"],
+      "port": null
+    }
+  ]
+}
