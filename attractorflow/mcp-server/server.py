@@ -59,9 +59,13 @@ async def _lifespan(app):
     _classifier = AttractorClassifier()
     _bifurcation = BifurcationDetector()
     _monitor.load_model()
+    restored = _monitor.load()   # restore previous session if within 24h
+    if restored:
+        import sys
+        print(f"[attractorflow] Restored session: {_monitor.buffer_size} steps from disk.", file=sys.stderr)
     yield
-    # Cleanup on shutdown
-    _monitor.clear()
+    # Cleanup on shutdown — final save already handled per-record
+    pass
 
 
 mcp = FastMCP("attractorflow_mcp", lifespan=_lifespan)
@@ -191,7 +195,8 @@ async def attractorflow_record_state(params: RecordStateInput, ctx: Context) -> 
     # Incrementally update FTLE history for bifurcation detector
     distances = _monitor.get_distance_series()
     if len(distances) >= 2:
-        result = _lyapunov.compute(distances)
+        embeddings = _monitor.get_embeddings_matrix()
+        result = _lyapunov.compute(distances, embeddings_matrix=embeddings)
         _ftle_history.append(result.ftle)
 
     return json.dumps({
@@ -251,7 +256,8 @@ async def attractorflow_get_regime(ctx: Context) -> str:
 
     distances = _monitor.get_distance_series()
     stats = _monitor.get_stats()
-    lya = _lyapunov.compute(distances)
+    embeddings = _monitor.get_embeddings_matrix()
+    lya = _lyapunov.compute(distances, embeddings_matrix=embeddings)
     result = _classifier.classify(lya, stats)
 
     # Track regime history for bifurcation detector
@@ -318,10 +324,14 @@ async def attractorflow_get_lyapunov(ctx: Context) -> str:
         }
     """
     distances = _monitor.get_distance_series()
-    result = _lyapunov.compute(distances)
+    embeddings = _monitor.get_embeddings_matrix()
+    result = _lyapunov.compute(distances, embeddings_matrix=embeddings)
 
     return json.dumps({
         "ftle": round(result.ftle, 4),
+        "step_growth_rate": round(result.step_growth_rate, 4),
+        "isotropy_ratio": round(result.isotropy_ratio, 4),
+        "singular_values": [round(s, 4) for s in result.singular_values],
         "ftle_trend": round(result.ftle_trend, 4),
         "window_size": result.window_size,
         "n_valid_steps": result.n_valid_steps,
@@ -510,9 +520,8 @@ async def attractorflow_detect_bifurcation(ctx: Context) -> str:
           "cluster_centroids": [[float, float]]
         }
     """
-    stats = _monitor.get_stats()
-    pca_2d = stats.pca_2d
-    result = _bifurcation.analyze(pca_2d, _regime_history, _ftle_history)
+    embeddings = _monitor.get_embeddings_matrix()
+    result = _bifurcation.analyze(embeddings, _regime_history, _ftle_history)
 
     return json.dumps({
         "detected": result.detected,

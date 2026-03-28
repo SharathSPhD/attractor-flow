@@ -229,7 +229,8 @@ class _OscillatingStrategy:
                 f"λ={lya.ftle:.3f}. "
                 f"lag-1 autocorr={lya.autocorrelation[0]:.2f} — "
                 "Detected 2-period attractor — alternating between two states without "
-                "convergence. (Wang et al. 2025: stable across models and temperatures.)"
+                "convergence. (Empirical: lag-1 anticorrelation characteristic of "
+                "2-period limit cycles in LLM generation.)"
             ),
             λ=lya.ftle,
             n_steps=stats.n_steps,

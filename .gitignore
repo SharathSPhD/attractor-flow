@@ -23,6 +23,7 @@ pymises/
 demo/results.json
 demo/dashboard_*.html
 demo/__pycache__/
+docs/other/
 
 # Simulation scratch outputs
 simulation/__pycache__/

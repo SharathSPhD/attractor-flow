@@ -8,12 +8,17 @@ Provides distance series and raw trajectory data to upstream estimators.
 
 from __future__ import annotations
 
+import json
 import time
 from collections import deque
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Deque, List, Optional, Tuple
 
 import numpy as np
+
+PERSIST_PATH = Path.home() / ".attractorflow" / "session.json"
+MAX_SESSION_AGE_SECONDS = 86400  # 24 hours — stale guard
 
 # Lazy import — loaded once at server start via lifespan
 _model = None
@@ -89,6 +94,7 @@ class PhaseSpaceMonitor:
         )
         self._buffer.append(record)
         self._step_counter += 1
+        self.save()  # persist after every new state (best-effort)
         return record
 
     def set_goal(self, goal_text: str) -> None:
@@ -117,6 +123,70 @@ class PhaseSpaceMonitor:
         self._goal_embedding = None
 
     # ------------------------------------------------------------------
+    # Persistence
+    # ------------------------------------------------------------------
+
+    def save(self) -> None:
+        """
+        Persist trajectory buffer to disk (best-effort — never raises).
+        Saved to ~/.attractorflow/session.json.
+        """
+        try:
+            data = {
+                "version": 1,
+                "saved_at": time.time(),
+                "step_counter": self._step_counter,
+                "goal_embedding": (
+                    self._goal_embedding.tolist()
+                    if self._goal_embedding is not None
+                    else None
+                ),
+                "states": [
+                    {
+                        "text": r.text,
+                        "embedding": r.embedding.tolist(),
+                        "timestamp": r.timestamp,
+                        "step_index": r.step_index,
+                    }
+                    for r in self._buffer
+                ],
+            }
+            PERSIST_PATH.parent.mkdir(parents=True, exist_ok=True)
+            PERSIST_PATH.write_text(json.dumps(data))
+        except Exception:
+            pass  # persistence is best-effort; never crash the server
+
+    def load(self) -> bool:
+        """
+        Load trajectory buffer from disk on startup.
+
+        Returns True if data was restored, False otherwise.
+        Silently ignores corrupt or stale (>24h) files.
+        """
+        if not PERSIST_PATH.exists():
+            return False
+        try:
+            data = json.loads(PERSIST_PATH.read_text())
+            saved_at = float(data.get("saved_at", 0))
+            if time.time() - saved_at > MAX_SESSION_AGE_SECONDS:
+                return False
+            self._step_counter = int(data.get("step_counter", 0))
+            goal = data.get("goal_embedding")
+            if goal is not None:
+                self._goal_embedding = np.array(goal, dtype=np.float32)
+            for s in data.get("states", []):
+                rec = StateRecord(
+                    text=s["text"],
+                    embedding=np.array(s["embedding"], dtype=np.float32),
+                    timestamp=float(s["timestamp"]),
+                    step_index=int(s["step_index"]),
+                )
+                self._buffer.append(rec)
+            return len(self._buffer) > 0
+        except Exception:
+            return False
+
+    # ------------------------------------------------------------------
     # Statistics
     # ------------------------------------------------------------------
 
@@ -125,6 +195,10 @@ class PhaseSpaceMonitor:
         if not self._buffer:
             return np.empty((0, EMBEDDING_DIM))
         return np.stack([r.embedding for r in self._buffer])
+
+    def get_embeddings_matrix(self) -> np.ndarray:
+        """Return trajectory as (N, 384) array (explicit alias for get_embeddings)."""
+        return self.get_embeddings()
 
     def get_distance_series(self) -> List[float]:
         """Successive L2 distances between consecutive embeddings."""
