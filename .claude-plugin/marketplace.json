@@ -18,12 +18,26 @@
       "source": {
         "source": "url",
         "url": "https://github.com/SharathSPhD/attractor-flow.git",
-        "sha": "071f33c7a97069e3b2b56d1c39ce677b23669862"
+        "sha": "67b0508167c95a83a68c3ef08f35e23527b90537"
       },
       "repository": "https://github.com/SharathSPhD/attractor-flow",
       "homepage": "https://github.com/SharathSPhD/attractor-flow",
-      "keywords": ["agents", "orchestration", "lyapunov", "dynamical-systems", "mcp", "attractor", "trajectory", "stability"],
-      "categories": ["Agent Orchestration", "MCP Servers", "Task Management", "Monitoring"],
+      "keywords": [
+        "agents",
+        "orchestration",
+        "lyapunov",
+        "dynamical-systems",
+        "mcp",
+        "attractor",
+        "trajectory",
+        "stability"
+      ],
+      "categories": [
+        "Agent Orchestration",
+        "MCP Servers",
+        "Task Management",
+        "Monitoring"
+      ],
       "rating": 5.0,
       "downloads": 0,
       "setup": {
@@ -51,13 +65,28 @@
       ],
       "compatibility": {
         "minClaudeCodeVersion": "1.0.0",
-        "supportedOS": ["darwin", "linux", "win32"]
+        "supportedOS": [
+          "darwin",
+          "linux",
+          "win32"
+        ]
       },
       "manifest": {
-        "agents": ["agents/attractor-orchestrator.md", "agents/explorer-agent.md", "agents/convergence-agent.md"],
-        "commands": ["commands/attractor-status.md", "commands/phase-portrait.md"],
-        "skills": ["skills/attractor-flow/SKILL.md"],
-        "mcp": [".mcp.json"]
+        "agents": [
+          "agents/attractor-orchestrator.md",
+          "agents/explorer-agent.md",
+          "agents/convergence-agent.md"
+        ],
+        "commands": [
+          "commands/attractor-status.md",
+          "commands/phase-portrait.md"
+        ],
+        "skills": [
+          "skills/attractor-flow/SKILL.md"
+        ],
+        "mcp": [
+          ".mcp.json"
+        ]
       }
     }
   ]
