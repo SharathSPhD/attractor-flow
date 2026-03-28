@@ -1,0 +1,52 @@
+{
+  "plugins": [
+    {
+      "id": "attractor-flow",
+      "name": "AttractorFlow",
+      "version": "1.0.0",
+      "author": "SharathSPhD",
+      "license": "MIT",
+      "description": "Monitor and steer multi-agent Claude Code trajectories using dynamical systems theory. Computes finite-time Lyapunov exponents (FTLE) over semantic embedding sequences to classify agent trajectory regimes (CONVERGING / CYCLING / EXPLORING / DIVERGING / STUCK / OSCILLATING / PLATEAU) and prescribe interventions before tasks derail.",
+      "repository": "https://github.com/SharathSPhD/attractor-flow",
+      "homepage": "https://github.com/SharathSPhD/attractor-flow",
+      "keywords": ["agents", "orchestration", "lyapunov", "dynamical-systems", "mcp", "attractor", "trajectory", "stability"],
+      "categories": ["Agent Orchestration", "MCP Servers", "Task Management", "Monitoring"],
+      "rating": 5.0,
+      "downloads": 0,
+      "installUrl": "https://github.com/SharathSPhD/attractor-flow",
+      "setup": {
+        "instructions": "python3.12 -m venv .venv && .venv/bin/pip install -r attractorflow/mcp-server/requirements.txt",
+        "notes": "Restart Claude Code after first-time setup. The sentence-transformers model (~22 MB) downloads automatically on first run.",
+        "estimatedTime": "2-3 minutes"
+      },
+      "features": [
+        {
+          "name": "Regime Classification",
+          "description": "Real-time classification of agent trajectory state using Lyapunov exponents"
+        },
+        {
+          "name": "Orchestration",
+          "description": "Three specialist agents: attractor-orchestrator (meta-router), explorer-agent (basin exploration), convergence-agent (fixed-point tuning)"
+        },
+        {
+          "name": "8 MCP Tools",
+          "description": "record_state, get_regime, get_lyapunov, get_trajectory, get_basin_depth, detect_bifurcation, inject_perturbation, checkpoint"
+        },
+        {
+          "name": "Interactive Commands",
+          "description": "/attractor-status (current regime report) and /phase-portrait (ASCII trajectory visualization)"
+        }
+      ],
+      "compatibility": {
+        "minClaudeCodeVersion": "1.0.0",
+        "supportedOS": ["darwin", "linux", "win32"]
+      },
+      "manifest": {
+        "agents": ["agents/attractor-orchestrator.md", "agents/explorer-agent.md", "agents/convergence-agent.md"],
+        "commands": ["commands/attractor-status.md", "commands/phase-portrait.md"],
+        "skills": ["skills/attractor-flow/SKILL.md"],
+        "mcp": [".mcp.json"]
+      }
+    }
+  ]
+}
