@@ -93,7 +93,7 @@ class PhaseSpaceMonitor:
     # ------------------------------------------------------------------
 
     def load_model(self) -> None:
-        """Load the sentence-transformers model (call once at server startup)."""
+        """Load the sentence-transformers model (lazy — called automatically on first use)."""
         global _model
         if _model is None:
             from sentence_transformers import SentenceTransformer
@@ -105,8 +105,7 @@ class PhaseSpaceMonitor:
 
     def record(self, text: str) -> StateRecord:
         """Embed text and append to trajectory buffer."""
-        if _model is None:
-            raise RuntimeError("Model not loaded. Call load_model() first.")
+        self.load_model()
         embedding = _model.encode(text, normalize_embeddings=True)
         record = StateRecord(
             text=text,
@@ -120,8 +119,7 @@ class PhaseSpaceMonitor:
 
     def set_goal(self, goal_text: str) -> None:
         """Set an anchor embedding for the intended goal."""
-        if _model is None:
-            raise RuntimeError("Model not loaded. Call load_model() first.")
+        self.load_model()
         self._goal_embedding = _model.encode(goal_text, normalize_embeddings=True)
 
     def checkpoint(self) -> None:

@@ -71,13 +71,12 @@ _ftle_history: List[float] = []
 
 @asynccontextmanager
 async def _lifespan(app):
-    """Initialize the Phase Space Monitor and embedding model at startup."""
+    """Initialize the Phase Space Monitor at startup. Model loads lazily on first record_state call."""
     global _monitor, _lyapunov, _classifier, _bifurcation
     _monitor = PhaseSpaceMonitor(capacity=_BUFFER_CAPACITY)
     _lyapunov = LyapunovEstimator(window=_FTLE_WINDOW)
     _classifier = AttractorClassifier()
     _bifurcation = BifurcationDetector()
-    _monitor.load_model()
     restored = _monitor.load()   # restore previous session if within 24h
     if restored:
         import sys
