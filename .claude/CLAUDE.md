@@ -8,14 +8,27 @@ agent trajectories using dynamical systems theory.
 The AttractorFlow MCP server is registered in `.mcp.json` and starts
 automatically when Claude Code is opened in this project.
 
-**First-time setup:**
+**First-time setup (one-time, global):**
 ```bash
-python3.12 -m venv .venv
-.venv/bin/pip install -r attractorflow/mcp-server/requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-The server embeds agent states using `all-MiniLM-L6-v2` (~22MB, auto-downloads on first run).
-Restart Claude Code after first-time setup so the MCP server connects.
+Restart Claude Code after installing `uv`. All Python dependencies
+(`sentence-transformers`, `mcp`, `scikit-learn`, etc.) are downloaded
+automatically by `uv run` on first MCP server start (~30 s, then instant).
+No manual venv or pip steps needed.
+
+## Session Scoping
+
+For multi-project use or benchmark runs (e.g. SWE-bench), set these env vars
+in your shell or in a project-level `.mcp.json` `env` block:
+
+| Env var | Default | Effect |
+|---------|---------|--------|
+| `ATTRACTORFLOW_SESSION_ID` | _(none)_ | Named session file `~/.attractorflow/sessions/<id>.json` |
+| `ATTRACTORFLOW_DISABLE_PERSISTENCE` | `0` | `1` = no disk I/O (benchmark/CI mode) |
+| `ATTRACTORFLOW_BUFFER_CAPACITY` | `100` | Override trajectory buffer size |
+| `ATTRACTORFLOW_WINDOW` | `8` | Override FTLE sliding window |
 
 ## Core Commands
 

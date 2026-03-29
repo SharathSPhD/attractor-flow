@@ -16,7 +16,7 @@
     "mcp": [".mcp.json"]
   },
   "setup": {
-    "instructions": "python3.12 -m venv .venv && .venv/bin/pip install -r attractorflow/mcp-server/requirements.txt",
-    "notes": "Restart Claude Code after first-time setup. The sentence-transformers model (~22 MB) downloads automatically on first run."
+    "instructions": "Install uv (one-time): curl -LsSf https://astral.sh/uv/install.sh | sh",
+    "notes": "uv manages all Python dependencies automatically on first MCP server start (~30 s download, then instant). Restart Claude Code after installing uv. No venv or pip steps needed."
   }
 }
