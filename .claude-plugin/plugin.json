@@ -12,11 +12,10 @@
   "components": {
     "agents": ["agents/attractor-orchestrator.md", "agents/explorer-agent.md", "agents/convergence-agent.md"],
     "commands": ["commands/attractor-status.md", "commands/phase-portrait.md"],
-    "skills": ["skills/attractor-flow/SKILL.md"],
-    "mcp": [".mcp.json"]
+    "skills": ["skills/attractor-flow/SKILL.md"]
   },
   "setup": {
-    "instructions": "1. Install uv (one-time): curl -LsSf https://astral.sh/uv/install.sh | sh\n2. Register MCP globally (one-time): claude mcp add --scope user attractorflow_mcp -- sh -c 'PLUGIN_ROOT=\"${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/attractor-flow}\" && cd \"$PLUGIN_ROOT/attractorflow/mcp-server\" && PATH=\"$PATH:$HOME/.local/bin\" uv run server.py'\n3. Restart Claude Code.",
+    "instructions": "1. Install uv (one-time): curl -LsSf https://astral.sh/uv/install.sh | sh\n2. Register MCP globally (one-time): claude mcp add --scope user attractorflow_mcp -- sh -c 'PLUGIN_ROOT=\"${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/attractor-flow}\" && cd \"$PLUGIN_ROOT/attractorflow/mcp-server\" && PATH=\"$PATH:$HOME/.local/bin\" uv run --no-project server.py'\n3. Restart Claude Code.",
     "notes": "uv auto-installs all Python deps on first tool call (~30s, then instant). The MCP server must be registered globally (step 2) for attractorflow_* tools to appear in any project directory."
   }
 }

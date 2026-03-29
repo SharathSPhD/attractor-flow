@@ -14,7 +14,7 @@ plugin_cache  = os.path.expanduser("~/.claude/plugins/cache/attractor-flow")
 mcp_cmd       = (
     'PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-' + plugin_cache + '}" '
     '&& cd "$PLUGIN_ROOT/attractorflow/mcp-server" '
-    '&& PATH="$PATH:$HOME/.local/bin" uv run server.py'
+    '&& PATH="$PATH:$HOME/.local/bin" uv run --no-project server.py'
 )
 
 try:

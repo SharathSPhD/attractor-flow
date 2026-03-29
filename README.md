@@ -43,7 +43,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ```bash
 claude mcp add --scope user attractorflow_mcp -- sh -c \
-  'PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/attractor-flow}" && cd "$PLUGIN_ROOT/attractorflow/mcp-server" && PATH="$PATH:$HOME/.local/bin" uv run server.py'
+  'PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/attractor-flow}" && cd "$PLUGIN_ROOT/attractorflow/mcp-server" && PATH="$PATH:$HOME/.local/bin" uv run --no-project server.py'
 ```
 
 Restart Claude Code. Python dependencies (`sentence-transformers`, `scikit-learn`, etc.)
