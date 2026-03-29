@@ -23,9 +23,9 @@
       "rating": 5.0,
       "downloads": 0,
       "setup": {
-        "instructions": "python3.12 -m venv .venv && .venv/bin/pip install -r attractorflow/mcp-server/requirements.txt",
-        "notes": "Restart Claude Code after first-time setup. The sentence-transformers model (~22 MB) downloads automatically on first run.",
-        "estimatedTime": "2-3 minutes"
+        "instructions": "curl -LsSf https://astral.sh/uv/install.sh | sh",
+        "notes": "Install uv (one-time, ~5 MB). Restart Claude Code. Python dependencies and the sentence-transformers model load automatically on first use — no venv, pip, or claude mcp add needed.",
+        "estimatedTime": "30 seconds"
       },
       "features": [
         {
@@ -52,8 +52,7 @@
       "manifest": {
         "agents": ["agents/attractor-orchestrator.md", "agents/explorer-agent.md", "agents/convergence-agent.md"],
         "commands": ["commands/attractor-status.md", "commands/phase-portrait.md"],
-        "skills": ["skills/attractor-flow/SKILL.md"],
-        "mcp": [".mcp.json"]
+        "skills": ["skills/attractor-flow/SKILL.md"]
       }
     }
   ]
