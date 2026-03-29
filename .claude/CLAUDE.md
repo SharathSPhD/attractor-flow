@@ -10,13 +10,16 @@ automatically when Claude Code is opened in this project.
 
 **First-time setup (one-time, global):**
 ```bash
+# 1. Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 2. Register the MCP server globally
+claude mcp add --scope user attractorflow_mcp -- sh -c \
+  'PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/attractor-flow}" && cd "$PLUGIN_ROOT/attractorflow/mcp-server" && PATH="$PATH:$HOME/.local/bin" uv run server.py'
 ```
 
-Restart Claude Code after installing `uv`. All Python dependencies
-(`sentence-transformers`, `mcp`, `scikit-learn`, etc.) are downloaded
-automatically by `uv run` on first MCP server start (~30 s, then instant).
-No manual venv or pip steps needed.
+Restart Claude Code. All Python dependencies load automatically on the first
+`attractorflow_record_state` call (~30 s, then instant). No venv or pip needed.
 
 ## Session Scoping
 

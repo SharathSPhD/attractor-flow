@@ -33,15 +33,21 @@ right intervention.
 
 ## Setup
 
-Install [uv](https://docs.astral.sh/uv/) (one-time, ~5 MB binary):
+**Step 1** — Install [uv](https://docs.astral.sh/uv/) (one-time, ~5 MB binary):
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Restart Claude Code. `uv` automatically installs all Python dependencies
-(`sentence-transformers`, `mcp`, `scikit-learn`, etc.) on first MCP server
-start — no manual venv or pip steps needed.
+**Step 2** — Register the MCP server globally (one-time):
+
+```bash
+claude mcp add --scope user attractorflow_mcp -- sh -c \
+  'PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/attractor-flow}" && cd "$PLUGIN_ROOT/attractorflow/mcp-server" && PATH="$PATH:$HOME/.local/bin" uv run server.py'
+```
+
+Restart Claude Code. Python dependencies (`sentence-transformers`, `scikit-learn`, etc.)
+load automatically on the first `attractorflow_record_state` call — no venv or pip needed.
 
 ### Session scoping (optional)
 
