@@ -18,7 +18,7 @@
       "source": {
         "source": "url",
         "url": "https://github.com/SharathSPhD/attractor-flow.git",
-        "sha": "d919b44537dcf7346725765a265340b66f92e294"
+        "sha": "8152ce66871deb93a6728d94b74436452ef6d5aa"
       },
       "repository": "https://github.com/SharathSPhD/attractor-flow",
       "homepage": "https://github.com/SharathSPhD/attractor-flow",
@@ -41,9 +41,9 @@
       "rating": 5.0,
       "downloads": 0,
       "setup": {
-        "instructions": "python3.12 -m venv .venv && .venv/bin/pip install -r attractorflow/mcp-server/requirements.txt",
-        "notes": "Restart Claude Code after first-time setup. The sentence-transformers model (~22 MB) downloads automatically on first run.",
-        "estimatedTime": "2-3 minutes"
+        "instructions": "curl -LsSf https://astral.sh/uv/install.sh | sh",
+        "notes": "Install uv (one-time, ~5 MB). Restart Claude Code. Python dependencies and the sentence-transformers model load automatically on first use — no venv, pip, or claude mcp add needed.",
+        "estimatedTime": "30 seconds"
       },
       "features": [
         {
@@ -83,9 +83,6 @@
         ],
         "skills": [
           "skills/attractor-flow/SKILL.md"
-        ],
-        "mcp": [
-          ".mcp.json"
         ]
       }
     }
