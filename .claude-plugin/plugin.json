@@ -9,7 +9,6 @@
   "license": "MIT",
   "repository": "https://github.com/SharathSPhD/attractor-flow",
   "keywords": ["agents", "orchestration", "lyapunov", "dynamical-systems", "mcp", "attractor"],
-  "mcpServers": "./.mcp.json",
   "components": {
     "agents": ["agents/attractor-orchestrator.md", "agents/explorer-agent.md", "agents/convergence-agent.md"],
     "commands": ["commands/attractor-status.md", "commands/phase-portrait.md"],
@@ -17,6 +16,6 @@
   },
   "setup": {
     "instructions": "Install uv (one-time): curl -LsSf https://astral.sh/uv/install.sh | sh",
-    "notes": "uv auto-installs all Python deps on first attractorflow_record_state call (~30s, then instant). The MCP server registers automatically via plugin auto-discovery. Just install uv and restart Claude Code."
+    "notes": "uv auto-installs all Python deps on first attractorflow_record_state call (~30s, then instant). The MCP server is registered via the marketplace manifest. Just install uv and restart Claude Code."
   }
 }
