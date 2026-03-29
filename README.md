@@ -33,14 +33,27 @@ right intervention.
 
 ## Setup
 
+Install [uv](https://docs.astral.sh/uv/) (one-time, ~5 MB binary):
+
 ```bash
-python3.12 -m venv .venv
-.venv/bin/pip install -r attractorflow/mcp-server/requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-The MCP server is registered in `.mcp.json` and starts automatically when
-Claude Code opens this project. Restart Claude Code after first-time setup
-(the sentence-transformers model, ~22 MB, downloads on first run).
+Restart Claude Code. `uv` automatically installs all Python dependencies
+(`sentence-transformers`, `mcp`, `scikit-learn`, etc.) on first MCP server
+start — no manual venv or pip steps needed.
+
+### Session scoping (optional)
+
+For multi-project or benchmark use, set env vars in your shell or in a
+project `.mcp.json` `env` block:
+
+| Env var | Default | Effect |
+|---------|---------|--------|
+| `ATTRACTORFLOW_SESSION_ID` | _(none)_ | Named session → `~/.attractorflow/sessions/<id>.json` |
+| `ATTRACTORFLOW_DISABLE_PERSISTENCE` | `0` | `1` = no disk I/O (benchmark / CI mode) |
+| `ATTRACTORFLOW_BUFFER_CAPACITY` | `100` | Override buffer size |
+| `ATTRACTORFLOW_WINDOW` | `8` | Override FTLE window |
 
 ## MCP tools
 

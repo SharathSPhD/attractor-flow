@@ -462,3 +462,112 @@ class TestPlateauClassifier:
             f"Expected PLATEAU (is_stuck + negative trend), got {plateau.regime}"
         assert stuck.regime == Regime.STUCK, \
             f"Expected STUCK (is_stuck + flat trend), got {stuck.regime}"
+
+
+# ------------------------------------------------------------------
+# TestEdgeCases — Issue 3 follow-up: degenerate inputs must not crash
+# ------------------------------------------------------------------
+
+class TestEdgeCases:
+    """
+    Very short trajectories, degenerate embeddings, and repeated identical
+    states must not raise exceptions or produce NaN / ±inf FTLE values.
+    The EPSILON guard in lyapunov.py is the key safety net under test here.
+    """
+
+    def test_single_state_no_crash(self):
+        """Buffer with one state has no distances; compute() must still return a finite result."""
+        from lyapunov import LyapunovEstimator
+        from phase_space import PhaseSpaceMonitor, StateRecord
+        monitor = PhaseSpaceMonitor()
+        monitor._buffer.append(StateRecord(
+            text="only", embedding=np.ones(384) / np.sqrt(384), step_index=0
+        ))
+        lya = LyapunovEstimator(window=8).compute(monitor.get_distance_series())
+        assert np.isfinite(lya.ftle), f"Single-state FTLE should be finite, got {lya.ftle}"
+
+    def test_two_state_trajectory_no_crash(self):
+        """Two states produce one distance; window > available data must not crash."""
+        from lyapunov import LyapunovEstimator
+        from phase_space import PhaseSpaceMonitor, StateRecord
+        rng = np.random.default_rng(0)
+        monitor = PhaseSpaceMonitor()
+        for i in range(2):
+            monitor._buffer.append(StateRecord(
+                text=str(i), embedding=rng.standard_normal(384), step_index=i
+            ))
+        lya = LyapunovEstimator(window=8).compute(monitor.get_distance_series())
+        assert np.isfinite(lya.ftle), f"Two-state FTLE should be finite, got {lya.ftle}"
+
+    def test_repeated_identical_states_finite_ftle(self):
+        """
+        Identical embeddings → L2 distances all 0.
+        In the log-ratio path: log((0 + ε) / (0 + ε)) = log(1) = 0 → FTLE = 0.
+        The agent should be classified as is_stuck (mean_distance < STUCK_ABSOLUTE_THRESHOLD).
+        """
+        from lyapunov import LyapunovEstimator
+        from phase_space import PhaseSpaceMonitor, StateRecord
+        fixed = np.ones(384) / np.sqrt(384)
+        monitor = PhaseSpaceMonitor()
+        for i in range(10):
+            monitor._buffer.append(StateRecord(
+                text="same", embedding=fixed.copy(), step_index=i
+            ))
+        lya = LyapunovEstimator(window=8).compute(monitor.get_distance_series())
+        assert np.isfinite(lya.ftle), f"Repeated-identical FTLE should be finite, got {lya.ftle}"
+        assert lya.is_stuck, "All-identical states must trigger is_stuck=True"
+
+    def test_all_zeros_embedding_svd_no_crash(self):
+        """
+        All-zero embeddings (pathological but possible in synthetic tests).
+        SVD of a zero displacement matrix should give σ_max ≈ 0 → log(ε)/W < 0.
+        Must not crash or produce NaN.
+        """
+        from lyapunov import LyapunovEstimator
+        from phase_space import PhaseSpaceMonitor, StateRecord
+        monitor = PhaseSpaceMonitor()
+        for i in range(10):
+            monitor._buffer.append(StateRecord(
+                text=str(i), embedding=np.zeros(384), step_index=i
+            ))
+        distances = monitor.get_distance_series()
+        embeddings = monitor.get_embeddings_matrix()
+        lya = LyapunovEstimator(window=8).compute(distances, embeddings_matrix=embeddings)
+        assert np.isfinite(lya.ftle), f"All-zeros SVD FTLE should be finite, got {lya.ftle}"
+
+
+# ------------------------------------------------------------------
+# TestSessionScoping — env-var driven session isolation
+# ------------------------------------------------------------------
+
+class TestSessionScoping:
+    """
+    Verify that ATTRACTORFLOW_SESSION_ID and ATTRACTORFLOW_DISABLE_PERSISTENCE
+    are honoured without requiring a server restart.
+
+    _resolve_persist_path() reads os.environ at call time, so monkeypatch.setenv
+    works correctly without reloading the module.
+    """
+
+    def test_session_id_routes_to_named_file(self, monkeypatch):
+        """ATTRACTORFLOW_SESSION_ID=<name> → path contains sessions/<name>.json."""
+        monkeypatch.setenv("ATTRACTORFLOW_SESSION_ID", "task-abc-123")
+        import phase_space as ps
+        path = ps._resolve_persist_path()
+        assert "task-abc-123" in str(path), f"Expected 'task-abc-123' in path, got {path}"
+        assert "sessions" in str(path), f"Expected 'sessions' subdir in path, got {path}"
+
+    def test_disable_persistence_skips_save(self, monkeypatch, tmp_path):
+        """ATTRACTORFLOW_DISABLE_PERSISTENCE=1 → save() writes nothing to disk."""
+        monkeypatch.setenv("ATTRACTORFLOW_DISABLE_PERSISTENCE", "1")
+        import phase_space as ps
+        # Redirect PERSIST_PATH to a temp location so we can assert no file appears
+        monkeypatch.setattr(ps, "PERSIST_PATH", tmp_path / "session.json")
+        monitor = ps.PhaseSpaceMonitor()
+        rng = np.random.default_rng(0)
+        monitor._buffer.append(ps.StateRecord(
+            text="x", embedding=rng.standard_normal(384), step_index=0
+        ))
+        monitor.save()
+        assert not (tmp_path / "session.json").exists(), \
+            "save() must be a no-op when ATTRACTORFLOW_DISABLE_PERSISTENCE=1"

@@ -15,10 +15,31 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Deque, List, Optional, Tuple
 
+import os as _os
+
 import numpy as np
 
-PERSIST_PATH = Path.home() / ".attractorflow" / "session.json"
-MAX_SESSION_AGE_SECONDS = 86400  # 24 hours — stale guard
+
+def _resolve_persist_path() -> Path:
+    """
+    Compute session file path from environment variables.
+
+    Priority:
+      ATTRACTORFLOW_SESSION_ID=<name>  →  ~/.attractorflow/sessions/<name>.json
+      (default)                         →  ~/.attractorflow/session.json
+
+    Set ATTRACTORFLOW_DISABLE_PERSISTENCE=1 to skip all disk I/O without
+    changing the resolved path (useful for benchmark / CI mode).
+    """
+    session_id = _os.environ.get("ATTRACTORFLOW_SESSION_ID", "").strip()
+    if session_id:
+        return Path.home() / ".attractorflow" / "sessions" / f"{session_id}.json"
+    return Path.home() / ".attractorflow" / "session.json"
+
+
+# Computed once at import — env vars must be set before the process starts.
+PERSIST_PATH = _resolve_persist_path()
+MAX_SESSION_AGE_SECONDS = int(_os.environ.get("ATTRACTORFLOW_SESSION_MAX_AGE_SECONDS", "86400"))
 
 # Lazy import — loaded once at server start via lifespan
 _model = None
@@ -129,8 +150,11 @@ class PhaseSpaceMonitor:
     def save(self) -> None:
         """
         Persist trajectory buffer to disk (best-effort — never raises).
-        Saved to ~/.attractorflow/session.json.
+        Saved to PERSIST_PATH (default: ~/.attractorflow/session.json).
+        No-op when ATTRACTORFLOW_DISABLE_PERSISTENCE=1.
         """
+        if _os.environ.get("ATTRACTORFLOW_DISABLE_PERSISTENCE", "").lower() in ("1", "true", "yes"):
+            return
         try:
             data = {
                 "version": 1,
@@ -161,8 +185,11 @@ class PhaseSpaceMonitor:
         Load trajectory buffer from disk on startup.
 
         Returns True if data was restored, False otherwise.
-        Silently ignores corrupt or stale (>24h) files.
+        Silently ignores corrupt or stale files.
+        No-op when ATTRACTORFLOW_DISABLE_PERSISTENCE=1.
         """
+        if _os.environ.get("ATTRACTORFLOW_DISABLE_PERSISTENCE", "").lower() in ("1", "true", "yes"):
+            return False
         if not PERSIST_PATH.exists():
             return False
         try:

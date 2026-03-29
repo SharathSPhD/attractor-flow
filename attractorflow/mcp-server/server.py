@@ -50,6 +50,14 @@ from bifurcation import BifurcationDetector
 
 
 # ------------------------------------------------------------------
+# Runtime configuration (override via environment variables)
+# ------------------------------------------------------------------
+
+import os as _os
+_BUFFER_CAPACITY = int(_os.environ.get("ATTRACTORFLOW_BUFFER_CAPACITY", "100"))
+_FTLE_WINDOW     = int(_os.environ.get("ATTRACTORFLOW_WINDOW", "8"))
+
+# ------------------------------------------------------------------
 # Server singleton state (shared across all tool calls in session)
 # ------------------------------------------------------------------
 
@@ -65,8 +73,8 @@ _ftle_history: List[float] = []
 async def _lifespan(app):
     """Initialize the Phase Space Monitor and embedding model at startup."""
     global _monitor, _lyapunov, _classifier, _bifurcation
-    _monitor = PhaseSpaceMonitor(capacity=100)
-    _lyapunov = LyapunovEstimator(window=8)
+    _monitor = PhaseSpaceMonitor(capacity=_BUFFER_CAPACITY)
+    _lyapunov = LyapunovEstimator(window=_FTLE_WINDOW)
     _classifier = AttractorClassifier()
     _bifurcation = BifurcationDetector()
     _monitor.load_model()
